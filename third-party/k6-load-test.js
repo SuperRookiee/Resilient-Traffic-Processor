@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { textSummary } from 'k6/summary';
 
 /**
  * k6 실행 옵션.
@@ -31,4 +32,17 @@ export default function () {
       'response has body': (r) => !!r.body,
     });
   }
+}
+
+export function handleSummary(data) {
+  const totalSeconds = (data.state.testRunDurationMs / 1000).toFixed(2);
+
+  const header = [
+    '█ 총 결과',
+    `전체 실행 시간: ${totalSeconds}초`,
+  ].join('\n');
+
+  return {
+    stdout: `${header}\n${textSummary(data, { indent: ' ', enableColors: true })}`,
+  };
 }
