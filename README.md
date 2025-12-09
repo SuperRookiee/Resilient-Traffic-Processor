@@ -1,6 +1,6 @@
 # Resilient-Traffic-Processor
 
-탄력적으로 외부 트래픽을 처리하기 위한 Spring Boot 서비스와 이를 검증하기 위한 k6 부하 테스트 스크립트를 함께 제공합니다. Resilience4j로 재시도·폴백을 적용해 안정적으로 URL을 호출하고, 처리 결과를 한국어 리포트 형태로 반환합니다.
+탄력적으로 외부 트래픽을 처리하기 위한 Spring Boot 서비스와 이를 검증하기 위한 k6 부하 테스트 스크립트를 함께 제공합니다. Resilience4j로 재시도·폴백을 적용해 안정적으로 URL을 호출하고, 처리 결과를 반환합니다.
 
 ## 프로젝트 구성
 - `processor/`: Kotlin 기반 Spring Boot 애플리케이션. 외부 URL 호출 시 재시도와 폴백을 적용하고, 처리 통계를 담은 `ProcessingReport`를 한국어 키로 반환합니다.
