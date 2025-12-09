@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: processor
+  main:
+    web-application-type: reactive
+  codec:
+    max-in-memory-size: 10MB
+
+server:
+  port: 8080
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      externalApi:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+    instances:
+      externalApi:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 2s
+    instances:
+      externalApi:
+        base-config: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
