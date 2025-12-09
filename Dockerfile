@@ -5,14 +5,14 @@ COPY processor/ .
 RUN ./gradlew clean bootJar --no-daemon
 
 FROM grafana/k6:latest
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends openjdk-21-jre-headless \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk add --no-cache openjdk21-jdk bash
 
 WORKDIR /app
 COPY --from=processor-builder /processor/build/libs/processor-0.0.1-SNAPSHOT.jar /app/processor.jar
 COPY third-party/k6-load-test.js /app/k6-load-test.js
 COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
