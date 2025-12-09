@@ -6,7 +6,7 @@ export const options = {
   duration: '60s',
 };
 
-const targetUrl = 'http://processor:8080/process?url=http://example.com';
+const targetUrl = 'http://processor:8080/process?url=http://resilient.com';
 
 export default function () {
   const delay = Math.random() * 0.5; // up to 500ms delay
