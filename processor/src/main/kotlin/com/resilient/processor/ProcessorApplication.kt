@@ -1,4 +1,4 @@
-package com.example.processor
+package com.resilient.processor
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

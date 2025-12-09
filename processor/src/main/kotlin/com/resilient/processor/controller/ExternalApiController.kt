@@ -1,4 +1,4 @@
-package com.example.processor.controller
+package com.resilient.processor.controller
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import io.github.resilience4j.retry.annotation.Retry
