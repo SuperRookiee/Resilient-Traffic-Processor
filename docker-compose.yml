@@ -1,0 +1,15 @@
+services:
+  processor:
+    build: ./processor
+    container_name: processor
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+  third-party:
+    build: ./third-party
+    container_name: load-generator
+    depends_on:
+      - processor
+    environment:
+      - K6_OUT=csv
