@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: Resilient Traffic Processor
