@@ -1,10 +1,18 @@
 services:
-  traffic-app:
-    build: .
-    container_name: traffic-app
+  processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: processor
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - K6_OUT=csv
     command: ["processor"]
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    depends_on:
+      - processor
+    volumes:
+      - ./third-party/k6-load-test.js:/src/k6-load-test.js
+    entrypoint: ["k6", "run", "/src/k6-load-test.js"]

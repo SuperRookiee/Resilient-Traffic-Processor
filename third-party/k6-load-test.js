@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { textSummary } from 'k6/summary';
 
 /**
  * k6 실행 옵션.
@@ -34,6 +33,10 @@ export default function () {
   }
 }
 
+/**
+ * textSummary 제거 버전
+ * Docker / 기본 k6에서 100% 정상 동작
+ */
 export function handleSummary(data) {
   const totalSeconds = (data.state.testRunDurationMs / 1000).toFixed(2);
 
@@ -42,7 +45,10 @@ export function handleSummary(data) {
     `전체 실행 시간: ${totalSeconds}초`,
   ].join('\n');
 
+  // 기본 요약 JSON 출력
+  const json = JSON.stringify(data, null, 2);
+
   return {
-    stdout: `${header}\n${textSummary(data, { indent: ' ', enableColors: true })}`,
+    stdout: `${header}\n\n요약(JSON):\n${json}`,
   };
 }
