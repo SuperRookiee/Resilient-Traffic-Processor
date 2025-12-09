@@ -34,7 +34,7 @@ class ExternalApiService(private val webClientBuilder: WebClient.Builder) {
         val successCount = AtomicInteger(0)
         val failureCount = AtomicInteger(0)
 
-        logger.info("Processing external request for URL: {}", url)
+        logger.info("외부 요청 처리 시작 - URL: {}", url)
 
         return webClient.get()
             .uri(url)
@@ -86,10 +86,10 @@ class ExternalApiService(private val webClientBuilder: WebClient.Builder) {
 
         return ResponseEntity.ok(
             mapOf(
-                "requestedUrl" to url,
-                "echo" to "Processed request for $url",
-                "responseBody" to body,
-                "report" to report
+                "요청_URL" to url,
+                "요청_메시지" to "요청을 성공적으로 처리했습니다: $url",
+                "응답_본문" to body,
+                "처리_리포트" to report
             )
         )
     }
@@ -117,17 +117,17 @@ class ExternalApiService(private val webClientBuilder: WebClient.Builder) {
             fallbackUsed = true
         )
 
-        logger.error("Fallback triggered for URL: {} due to: {}", url, ex.message)
+        logger.error("폴백 실행 - URL: {} / 이유: {}", url, ex.message)
         logger.info("실패 처리 리포트: {}", report)
 
         return Mono.just(
             ResponseEntity.ok(
                 mapOf(
-                    "requestedUrl" to url,
-                    "echo" to "Processed request for $url",
-                    "fallback" to true,
-                    "error" to (ex.message ?: "Unknown error"),
-                    "report" to report
+                    "요청_URL" to url,
+                    "요청_메시지" to "요청 처리 중 문제가 발생했습니다: $url",
+                    "폴백" to true,
+                    "에러" to (ex.message ?: "알 수 없는 오류"),
+                    "처리_리포트" to report
                 )
             )
         )
