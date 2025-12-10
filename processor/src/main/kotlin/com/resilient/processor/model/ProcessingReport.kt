@@ -29,5 +29,8 @@ data class ProcessingReport(
     val failureCount: Int,
 
     @JsonProperty("폴백_사용")
-    val fallbackUsed: Boolean
+    val fallbackUsed: Boolean,
+
+    @JsonProperty("회로_상태")
+    val circuitBreakerState: String
 )
