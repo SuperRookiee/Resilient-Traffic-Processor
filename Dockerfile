@@ -1,8 +1,13 @@
 # Build Spring Boot Processor
 FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /processor
-COPY processor/ .
-RUN ./gradlew clean bootJar --no-daemon
+
+# Copy the entire processor project so the Gradle wrapper and sources are available
+COPY processor/ ./
+
+# Use sh explicitly to avoid exec issues if the wrapper is missing execute bits
+RUN chmod +x ./gradlew \
+    && sh ./gradlew clean bootJar --no-daemon
 
 # Final runtime image
 FROM eclipse-temurin:21-jre
