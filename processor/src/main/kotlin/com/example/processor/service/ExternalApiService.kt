@@ -4,7 +4,6 @@ import com.example.processor.model.ProcessingReport
 import com.example.processor.model.RequestResult
 import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -14,7 +13,6 @@ import java.time.Duration
  * 테스터가 구현해야 하는 핵심 Service.
  * 이번 버전은 정답 코드가 포함되어 있으며, 테스터에게 줄 때는 주석을 읽고 정답을 제거해야 한다.
  */
-@Service
 class ExternalApiService(
     private val webClientBuilder: WebClient.Builder
 ) {
