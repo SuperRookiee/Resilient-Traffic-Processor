@@ -12,7 +12,7 @@ export const options = {
   duration: '60s',
 };
 
-const targetUrl = 'http://processor:8080/process?url=http://resilient.com';
+const targetUrl = 'http://processor:8080/process';
 
 export default function () {
   const delay = Math.random() * 0.5; // 최대 500ms까지 지연을 줘서 실제 사용자 변동을 흉내
