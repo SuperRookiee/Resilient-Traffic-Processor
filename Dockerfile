@@ -1,8 +1,17 @@
 # Build Spring Boot Processor
 FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /processor
-COPY processor/ .
-RUN ./gradlew clean bootJar --no-daemon
+
+# Copy Gradle wrapper and build files first to leverage Docker layer caching
+COPY processor/gradlew ./gradlew
+COPY processor/gradle ./gradle
+COPY processor/build.gradle.kts processor/settings.gradle.kts ./
+
+# Copy application sources
+COPY processor/src ./src
+
+RUN chmod +x ./gradlew \
+    && ./gradlew clean bootJar --no-daemon
 
 # Final runtime image
 FROM eclipse-temurin:21-jre
