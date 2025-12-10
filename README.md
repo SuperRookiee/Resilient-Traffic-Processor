@@ -1,35 +1,47 @@
-# Resilient-Traffic-Processor
+# 트래픽 처리 과제 스켈레톤 (정답 포함 버전)
 
-탄력적으로 외부 트래픽을 처리하기 위한 Spring Boot 서비스와 이를 검증하기 위한 k6 부하 테스트 스크립트를 함께 제공합니다. WebClient 호출에 Resilience4j 기반의 타임리미터·서킷브레이커·재시도를 적용해 부하 상황에서도 안정적으로 응답을 만들고, 처리 결과를 반환합니다.
+이 저장소는 테스터에게 줄 "대용량 트래픽 처리" 실습용 Spring Boot + Kotlin 스켈레톤입니다. `/process` API가 1분간 k6로 폭발적인 트래픽을 받도록 설계되었으며, **Service 단 구현이 핵심**입니다. 이 버전에는 이해를 돕기 위한 정답 코드가 포함되어 있으니, 테스터에게 전달할 때는 `ExternalApiService`의 정답 구현을 삭제하고 `NotImplementedError()`로 교체해야 합니다.
 
-## 프로젝트 구성
-- `processor/`: Kotlin 기반 Spring Boot 애플리케이션. 외부 URL 호출 시 재시도와 폴백을 적용하고, 처리 통계를 담은 `ProcessingReport`를 한국어 키로 반환합니다.
-- `third-party/`: k6 부하 테스트 스크립트와 Dockerfile. 설정(동시 가상 사용자 수와 테스트 지속 시간)은 JSDoc으로 명시되어 있어 빠르게 조정할 수 있습니다.
-- `docker-compose.yml`: 프로세서와 k6 실행 환경을 하나의 컨테이너로 묶어 올릴 수 있는 설정을 제공합니다. 컨테이너는 기본적으로 프로세서를 실행하며, 필요 시 같은 이미지로 k6를 실행할 수 있습니다.
+## 프로젝트 구조
+```
+src
+└ main
+    └ kotlin
+        └ com.example.processor
+            ├ Application.kt
+            ├ controller/ProcessingController.kt
+            ├ service/ExternalApiService.kt
+            ├ model/ProcessingReport.kt
+            └ model/RequestResult.kt
+```
 
-## 동작 개요
-- **얼마나?** 기본 설정으로 가상 사용자 300명이 동시에 요청을 보냅니다.
-- **얼마 동안?** 각 부하 테스트 실행은 60초 동안 지속됩니다.
-- **무엇을?** `/process` 엔드포인트로 설정된 대상 URL을 호출하고, 성공/실패·재시도 횟수·회로 상태·처리량이 포함된 한국어 `ProcessingReport`를 응답 본문에 포함합니다. URL 파라미터 없이 고정된 대상을 테스트할 수 있어 k6로 부하를 주기 간편합니다.
+## 빠른 시작
+```bash
+./gradlew bootRun
+```
+- 실행 후 `http://localhost:8080/process?targetUrl=https://example.com` 으로 접근하면 비동기 GET을 여러 번 수행하고 집계 리포트를 JSON으로 돌려줍니다.
 
-## Docker로 실행하기
-1. 컨테이너 빌드 및 실행:
-   ```bash
-   docker compose up --build
-   ```
+## k6 부하 테스트 예시
+아래 예시는 1분 동안 300 VU로 `/process` API를 때려서 얼마나 견디는지 확인합니다.
+```bash
+k6 run --vus 300 --duration 1m - <(cat <<'K6'
+import http from 'k6/http';
+import { check, sleep } from 'k6';
 
-2. 컨테이너가 올라오면 프로세서 API는 `http://localhost:8080/process` 로 접근할 수 있습니다. 호출 대상 URL은 `processor.target-url` 설정을 통해 변경할 수 있으며, 기본값은 `https://jsonplaceholder.typicode.com/posts/1`입니다.
+export default function () {
+  const res = http.get('http://localhost:8080/process?targetUrl=https://example.com');
+  check(res, { 'status 200': (r) => r.status === 200 });
+  sleep(1);
+}
+K6
+)
+```
 
-3. 동일한 이미지를 사용해 k6 부하 테스트를 실행하려면, 컨테이너 실행 명령만 바꿔 호출합니다:
-   ```bash
-   docker compose run --rm traffic-app k6
-   ```
-   `docker compose up`으로 프로세서가 이미 떠 있는 상태라면 `localhost:8080`을 대상으로 테스트가 실행됩니다.
+## 과제 안내 (테스터용)
+- `/process` 엔드포인트는 초당 다수의 외부 호출을 병렬로 날리고, 성공/실패와 정확도를 `ProcessingReport`로 반환합니다.
+- **Service 단 구현이 핵심**이며, 컨트롤러는 파라미터 전달만 담당합니다.
+- 정답 코드가 포함된 `ExternalApiService` 상단의 `// TODO` 주석을 참고하여, 테스터에게 전달할 때는 정답 구현을 삭제하고 `NotImplementedError()`로 바꿔주세요.
 
-4. 종료 및 정리:
-   ```bash
-   docker compose down
-   ```
-
-## 부하 테스트 스크립트 수정하기
-`third-party/k6-load-test.js`에서 JSDoc으로 표시된 `options` 설정을 변경하면 부하 강도와 시간을 조정할 수 있습니다. 스크립트에는 한국어 주석이 포함되어 있어 테스트 시나리오를 쉽게 파악할 수 있습니다. 회로가 열리거나(오픈) 타임아웃에 도달하면 서비스가 자동으로 폴백 응답과 회로 상태를 반환하므로, k6 결과와 함께 서킷브레이커 동작을 쉽게 관찰할 수 있습니다.
+## 주의
+- 코드 전반에 한국어 주석이 포함되어 있어 학습과 수정에 용이합니다.
+- k6나 기타 부하 도구로 트래픽을 줄 때, 대상 서버에 적절한 허용을 받았는지 확인하세요.
