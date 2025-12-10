@@ -10,7 +10,9 @@ COPY processor/build.gradle.kts processor/settings.gradle.kts ./
 # Copy application sources
 COPY processor/src ./src
 
-RUN chmod +x ./gradlew \
+# Normalize potential Windows line endings on the wrapper script before execution
+RUN sed -i 's/\r$//' ./gradlew \
+    && chmod +x ./gradlew \
     && ./gradlew clean bootJar --no-daemon
 
 # Final runtime image
