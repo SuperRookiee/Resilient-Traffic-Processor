@@ -6,3 +6,21 @@ spring:
 
 server:
   port: 8080
+
+processing:
+  totalRequests: 50
+  parallelism: 10
+
+http:
+  client:
+    max-connections: 400
+    pending-acquire-max-count: 2000
+    pending-acquire-timeout: 5s
+    max-idle-time: 30s
+    max-life-time: 2m
+    connection-timeout: 2s
+    response-timeout: 5s
+    read-timeout: 5s
+    write-timeout: 5s
+    tcp-no-delay: true
+    so-keep-alive: true
