@@ -11,6 +11,9 @@ processing:
   totalRequests: 50
   parallelism: 10
 
+processor:
+  target-url: https://httpbin.org/get
+
 http:
   client:
     max-connections: 400

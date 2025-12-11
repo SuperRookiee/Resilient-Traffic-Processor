@@ -19,13 +19,7 @@ import java.util.concurrent.TimeUnit
 class WebClientConfig {
 
     @Bean
-    fun webClientBuilder(): WebClient.Builder = WebClient.builder()
-
-    @Bean
-    fun reactiveWebClient(
-        builder: WebClient.Builder,
-        httpClientProperties: HttpClientProperties
-    ): WebClient {
+    fun webClient(httpClientProperties: HttpClientProperties): WebClient {
         val connectionProvider = ConnectionProvider.builder("pooled-http-client")
             .maxConnections(httpClientProperties.maxConnections)
             .pendingAcquireMaxCount(httpClientProperties.pendingAcquireMaxCount)
@@ -49,7 +43,7 @@ class WebClientConfig {
                 )
             }
 
-        return builder
+        return WebClient.builder()
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .build()
     }

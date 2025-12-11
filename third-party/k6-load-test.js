@@ -1,30 +1,31 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import { check } from 'k6';
+
+// Docker compose에서 실행 시: const PROCESSOR_URL = 'http://processor:8080/process';
+// 로컬 단독 실행 시:      const PROCESSOR_URL = 'http://localhost:8080/process';
+const PROCESSOR_URL = __ENV.PROCESSOR_URL || 'http://localhost:8080/process';
 
 export const options = {
-  vus: 300,
-  duration: '60s',
-  summaryTrendStats: [], // 기본 summary 제거
+  scenarios: {
+    steady_rate: {
+      executor: 'constant-arrival-rate',
+      rate: 200, // 초당 200건 도착률 예시
+      timeUnit: '1s',
+      duration: '60s',
+      preAllocatedVUs: 100,
+      maxVUs: 400,
+    },
+  },
+  summaryTrendStats: [],
 };
 
-const targetUrl = 'http://processor:8080/process';
-
 export default function () {
-  const delay = Math.random() * 0.5;
-  sleep(delay);
+  const res = http.get(PROCESSOR_URL);
 
-  const res = http.get(targetUrl);
-
-  if (Math.random() < 0.05) {
-    check(res, {
-      'forced error': () => false,
-    });
-  } else {
-    check(res, {
-      'status is 2xx': (r) => r.status >= 200 && r.status < 300,
-      'response has body': (r) => !!r.body,
-    });
-  }
+  check(res, {
+    'status is 2xx': (r) => r.status >= 200 && r.status < 300,
+    'response has body': (r) => !!r.body,
+  });
 }
 
 export function handleSummary(data) {
