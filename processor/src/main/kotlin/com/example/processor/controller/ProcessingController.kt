@@ -1,7 +1,7 @@
 package com.example.processor.controller
 
 import com.example.processor.model.ProcessingReport
-import com.example.processor.service.ExternalApiTestService
+import com.example.processor.service.ExternalApiService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 class ProcessingController(
-    private val externalApiTestService: ExternalApiTestService
+    private val externalApiService: ExternalApiService
 ) {
 
     /**
@@ -21,6 +21,6 @@ class ProcessingController(
      */
     @GetMapping("/process")
     suspend fun process(@RequestParam targetUrl: String): ProcessingReport {
-        return externalApiTestService.process(targetUrl)
+        return externalApiService.process(targetUrl)
     }
 }
