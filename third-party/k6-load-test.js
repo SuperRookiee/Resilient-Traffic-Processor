@@ -39,16 +39,56 @@ export default function () {
  */
 export function handleSummary(data) {
   const totalSeconds = (data.state.testRunDurationMs / 1000).toFixed(2);
+  const metrics = data.metrics ?? {};
+
+  const httpReqs = metrics.http_reqs?.values?.count ?? 0;
+  const httpReqsRate = metrics.http_reqs?.values?.rate ?? 0;
+
+  const iterations = metrics.iterations?.values?.count ?? 0;
+
+  const checkPasses = metrics.checks?.passes ?? 0;
+  const checkFails = metrics.checks?.fails ?? 0;
+
+  const latency = metrics.http_req_duration?.values ?? {};
+  const latencyLine = [
+    latency['p(50)'],
+    latency['p(90)'],
+    latency['p(95)'],
+    latency['p(99)'],
+  ].some((v) => v !== undefined)
+    ? [
+        `  p50: ${latency['p(50)']?.toFixed(2) ?? '-'} ms`,
+        `  p90: ${latency['p(90)']?.toFixed(2) ?? '-'} ms`,
+        `  p95: ${latency['p(95)']?.toFixed(2) ?? '-'} ms`,
+        `  p99: ${latency['p(99)']?.toFixed(2) ?? '-'} ms`,
+      ].join('\n')
+    : '  (데이터 없음)';
+
+  const httpErrors = metrics.http_req_failed?.values ?? {};
+  const httpErrorRate = httpErrors.rate ?? 0;
 
   const header = [
     '█ 총 결과',
     `전체 실행 시간: ${totalSeconds}초`,
   ].join('\n');
 
-  // 기본 요약 JSON 출력
-  const json = JSON.stringify(data, null, 2);
+  const report = [
+    header,
+    '',
+    '요약 지표',
+    `- 요청 수: ${httpReqs.toLocaleString()}회 (${httpReqsRate.toFixed(2)} req/s)`,
+    `- 반복 수(iterations): ${iterations.toLocaleString()}회`,
+    `- 체크 결과: ${checkPasses.toLocaleString()} 성공 / ${checkFails.toLocaleString()} 실패`,
+    `- HTTP 오류율: ${(httpErrorRate * 100).toFixed(2)}%`,
+    '',
+    'HTTP 응답 지연 (ms)',
+    latencyLine,
+    '',
+    '자세한 결과(JSON)',
+    JSON.stringify(data, null, 2),
+  ].join('\n');
 
   return {
-    stdout: `${header}\n\n요약(JSON):\n${json}`,
+    stdout: report,
   };
 }
