@@ -1,26 +1,20 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-/**
- * k6 실행 옵션.
- * @type {{vus: number, duration: string}}
- * - vus: 동시에 동작할 가상 사용자의 수.
- * - duration: 테스트를 유지할 전체 시간.
- */
 export const options = {
   vus: 300,
   duration: '60s',
+  summaryTrendStats: [], // 기본 summary 제거
 };
 
 const targetUrl = 'http://processor:8080/process';
 
 export default function () {
-  const delay = Math.random() * 0.5; // 최대 500ms까지 지연을 줘서 실제 사용자 변동을 흉내
+  const delay = Math.random() * 0.5;
   sleep(delay);
 
   const res = http.get(targetUrl);
 
-  // 검증을 위해 클라이언트 오류를 일부러 발생시키는 구간
   if (Math.random() < 0.05) {
     check(res, {
       'forced error': () => false,
@@ -33,10 +27,6 @@ export default function () {
   }
 }
 
-/**
- * textSummary 제거 버전
- * Docker / 기본 k6에서 100% 정상 동작
- */
 export function handleSummary(data) {
   const totalSeconds = (data.state.testRunDurationMs / 1000).toFixed(2);
   const metrics = data.metrics ?? {};
@@ -68,23 +58,23 @@ export function handleSummary(data) {
   const httpErrorRate = httpErrors.rate ?? 0;
 
   const header = [
-    '█ 총 결과',
+    '██ 테스트 결과 요약',
     `전체 실행 시간: ${totalSeconds}초`,
   ].join('\n');
 
   const report = [
     header,
     '',
-    '요약 지표',
-    `- 요청 수: ${httpReqs.toLocaleString()}회 (${httpReqsRate.toFixed(2)} req/s)`,
-    `- 반복 수(iterations): ${iterations.toLocaleString()}회`,
+    '📌 주요 지표',
+    `- 총 요청 수: ${httpReqs.toLocaleString()}회 (${httpReqsRate.toFixed(2)} req/s)`,
+    `- 실행 반복(iterations): ${iterations.toLocaleString()}회`,
     `- 체크 결과: ${checkPasses.toLocaleString()} 성공 / ${checkFails.toLocaleString()} 실패`,
     `- HTTP 오류율: ${(httpErrorRate * 100).toFixed(2)}%`,
     '',
-    'HTTP 응답 지연 (ms)',
+    '⏱ HTTP 응답 지연 (ms)',
     latencyLine,
     '',
-    '자세한 결과(JSON)',
+    '📄 원본 데이터(JSON)',
     JSON.stringify(data, null, 2),
   ].join('\n');
 
